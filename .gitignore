@@ -1,0 +1,13 @@
+.*
+!.clang-format
+!clang-tidy
+!.gitignore
+!.editorconfig
+*~
+\#*\#
+.\#
+.vscode
+*/build
+*build
+*.o
+*.so
