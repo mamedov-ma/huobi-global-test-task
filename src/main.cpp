@@ -6,7 +6,7 @@ int main()
     std::ifstream inputFile("../data/huobi_global_depth.log");
     std::ofstream outputFile{"../data/output.txt"};
 
-    order_book::OrderBookUnorderedSet orderBook;
+    order_book::OrderBookArray orderBook;
     std::string line;
 
     while (std::getline(inputFile, line))

@@ -55,4 +55,19 @@ void order_book_set(benchmark::State& state)
 }
 BENCHMARK(order_book_set);
 
+void order_book_array(benchmark::State& state)
+{
+    order_book::OrderBookArray orderBook;
+
+    for (auto _ : state)
+    {
+        for (auto const& [bids, asks] : g_data)
+        {
+            orderBook.update(bids, asks);
+            orderBook.getBestLevels();
+        }
+    }
+}
+BENCHMARK(order_book_array);
+
 BENCHMARK_MAIN();

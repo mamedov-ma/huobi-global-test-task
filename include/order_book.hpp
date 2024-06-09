@@ -107,4 +107,26 @@ private:
     std::set<ask, level_comp> m_asks;
 };
 
+class OrderBookArray
+{
+public:
+    OrderBookArray() {}
+
+    void update(std::vector<bid> const& bids, std::vector<ask> const& asks);
+
+    std::pair<bid const&, ask const&> getBestLevels() const noexcept { return {*bestBid, *bestAsk}; }
+
+private:
+    template <ALevel LEVEL>
+    void addOrModifyLevel(LEVEL const& level);
+
+    template <ALevel LEVEL>
+    void deleteLevel(LEVEL const& level);
+
+    std::array<bid, 20> m_bids;
+    std::array<ask, 20> m_asks;
+    bid* bestBid;
+    ask* bestAsk;
+};
+
 } // namespace order_book

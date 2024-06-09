@@ -141,4 +141,129 @@ void OrderBookSet::deleteLevel(LEVEL const& level)
     }
 }
 
+void OrderBookArray::update(std::vector<bid> const& bids, std::vector<ask> const& asks)
+{
+    for (bid const& level : bids)
+    {
+        level.price == 0.0 ? deleteLevel(level) : addOrModifyLevel(level);
+    }
+
+    for (ask const& level : asks)
+    {
+        level.price == 0.0 ? deleteLevel(level) : addOrModifyLevel(level);
+    }
+}
+
+template <ALevel LEVEL>
+void OrderBookArray::addOrModifyLevel(LEVEL const& level)
+{
+    if constexpr (std::is_same_v<std::remove_cvref_t<LEVEL>, bid>)
+    {
+        for (auto& bid : m_bids)
+        {
+            if (equal_to{}(bid, level))
+            {
+                deleteLevel(level);
+                addOrModifyLevel(level);
+                return;
+            }
+        }
+
+        for (auto& bid : m_bids)
+        {
+            if (bid.price == 0.0)
+            {
+                bid = level;
+                if (!bestBid || level_comp{}(*bestBid, bid)) { bestBid = &bid; }
+            }
+        }
+    }
+    else if constexpr (std::is_same_v<std::remove_cvref_t<LEVEL>, ask>)
+    {
+        for (auto& ask : m_asks)
+        {
+            if (equal_to{}(ask, level))
+            {
+                deleteLevel(level);
+                addOrModifyLevel(level);
+                return;
+            }
+        }
+
+        for (auto& ask : m_asks)
+        {
+            if (ask.price == 0.0)
+            {
+                ask = level;
+                if (!bestAsk || level_comp{}(ask, *bestAsk)) { bestAsk = &ask; }
+            }
+        }
+    }
+}
+
+template <ALevel LEVEL>
+void OrderBookArray::deleteLevel(LEVEL const& level)
+{
+    if constexpr (std::is_same_v<std::remove_cvref_t<LEVEL>, bid>)
+    {
+        if (bestBid->price != level.price)
+        {
+            for (auto& bid : m_bids)
+            {
+                if (equal_to{}(bid, level))
+                {
+                    bid.price = 0.0;
+                    bid.amount = 0.0;
+                }
+            }
+        }
+        else
+        {
+            bestBid = &m_bids[0];
+            for (auto& bid : m_bids)
+            {
+                if (equal_to{}(bid, level))
+                {
+                    bid.price = 0.0;
+                    bid.amount = 0.0;
+                }
+                else
+                {
+                    if (level_comp{}(*bestBid, bid)) { bestBid = &bid; }
+                }
+            }
+        }
+    }
+    else if constexpr (std::is_same_v<std::remove_cvref_t<LEVEL>, ask>)
+    {
+        if (bestAsk->price != level.price)
+        {
+            for (auto& ask : m_asks)
+            {
+                if (equal_to{}(ask, level))
+                {
+                    ask.price = 0.0;
+                    ask.amount = 0.0;
+                }
+            }
+        }
+        else
+        {
+            bestAsk = &m_asks[0];
+            for (auto& ask : m_asks)
+            {
+                if (equal_to{}(ask, level))
+                {
+                    ask.price = 0.0;
+                    ask.amount = 0.0;
+                }
+                else
+                {
+                    if (level_comp{}(ask, *bestAsk)) { bestAsk = &ask; }
+                }
+            }
+        }
+    }
+}
+
 } // namespace order_book
